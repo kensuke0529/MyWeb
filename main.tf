@@ -76,6 +76,7 @@ resource "aws_s3_bucket_policy" "public_read" {
 # LOGGING BUCKET: For CloudFront logs
 resource "aws_s3_bucket" "mylogs" {
   bucket = var.bucket_name_log
+  acl    = "log-delivery-write"
 }
 
 # Enable ACLs on logging bucket by setting object ownership to allow ACLs (not "BucketOwnerEnforced")

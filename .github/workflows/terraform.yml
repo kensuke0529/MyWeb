@@ -26,15 +26,11 @@ jobs:
         run: terraform init
         working-directory: ./
 
-      - name: Terraform Import myweb bucket
-        run: terraform import aws_s3_bucket.myweb kensuke-terraform-web-log-123
+      - name: Terraform Import existing S3 buckets
+        run: |
+          terraform import aws_s3_bucket.myweb kensuke-terraform-web-log-123 || echo "myweb bucket already imported"
+          terraform import aws_s3_bucket.mylogs kensuke-terraform-website-123 || echo "mylogs bucket already imported"
         working-directory: ./
-        continue-on-error: true
-
-      - name: Terraform Import mylogs bucket
-        run: terraform import aws_s3_bucket.mylogs kensuke-terraform-website-123
-        working-directory: ./
-        continue-on-error: true
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
@@ -60,4 +56,3 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id ${{ steps.tf_outputs.outputs.cf_dist_id }} \
             --paths "/*"
-
