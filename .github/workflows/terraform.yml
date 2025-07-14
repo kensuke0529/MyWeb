@@ -1,7 +1,11 @@
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -20,18 +24,18 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./   # root folder where your .tf files are
+        working-directory: ./
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: ./   # root folder
+        working-directory: ./
 
       - name: Get Terraform outputs
         id: tf_outputs
         run: |
-          echo "::set-output name=cf_dist_id::$(terraform output -raw cloudfront_distribution_id)"
-          echo "::set-output name=website_bucket::$(terraform output -raw website_bucket)"
-        working-directory: ./   # root folder
+          echo "cf_dist_id=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
+          echo "website_bucket=$(terraform output -raw website_bucket)" >> $GITHUB_OUTPUT
+        working-directory: ./
 
       - name: List static website files
         run: ls -l ./my-website
@@ -44,4 +48,3 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id ${{ steps.tf_outputs.outputs.cf_dist_id }} \
             --paths "/*"
-
