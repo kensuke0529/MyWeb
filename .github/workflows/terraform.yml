@@ -39,8 +39,8 @@ jobs:
       - name: Get Terraform outputs
         id: tf_outputs
         run: |
-          cf_dist_id=$(terraform output -raw cloudfront_distribution_id)
-          website_bucket=$(terraform output -raw website_bucket)
+          cf_dist_id=$(terraform output -raw cloudfront_distribution_id | tr -d '\r\n')
+          website_bucket=$(terraform output -raw website_bucket | tr -d '\r\n')
           echo "cf_dist_id=$cf_dist_id" >> $GITHUB_OUTPUT
           echo "website_bucket=$website_bucket" >> $GITHUB_OUTPUT
         working-directory: ./
