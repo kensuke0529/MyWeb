@@ -1,32 +1,53 @@
-name: Deploy Static Website to S3
+name: Deploy Static Website with Terraform & Sync
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'my-website/**'  # Only trigger when static files change
+      - '**'  # trigger on any change
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up AWS CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7
+
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      - name: Get Terraform outputs
+        id: tf_outputs
+        run: |
+          echo "::set-output name=cf_dist_id::$(terraform output -raw cloudfront_distribution_id)"
+          echo "::set-output name=website_bucket::$(terraform output -raw website_bucket)"
+        # Adjust output names above to match your Terraform outputs
+
+      - name: List static website files
+        run: ls -l ./terraform-static-site/my-website
+
       - name: Sync static site to S3
-        run: aws s3 sync ./terraform-static-site/my-website s3://kensuke-terraform-website --delete
+        run: aws s3 sync ./terraform-static-site/my-website s3://${{ steps.tf_outputs.outputs.website_bucket }} --delete
 
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id E10A9W4B15K5XL \
+            --distribution-id ${{ steps.tf_outputs.outputs.cf_dist_id }} \
             --paths "/*"
