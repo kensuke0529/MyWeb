@@ -1,12 +1,13 @@
 variable "bucket_name_web" {
-  description = "The name of the S3 bucket to host the website"
-  type        = string
+  type = string
 }
 
+## f
+
 variable "bucket_name_log" {
-  description = "The name of the S3 bucket to store CloudFront logs"
-  type        = string
+  type = string
 }
+
 
 variable "log_prefix" {
   description = "Prefix for log files in the log bucket"
