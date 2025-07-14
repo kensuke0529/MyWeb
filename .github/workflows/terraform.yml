@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - '**'  # trigger on any change
+      - '**'
 
 jobs:
   deploy:
@@ -29,16 +29,18 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+        working-directory: ./terraform-static-site
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
+        working-directory: ./terraform-static-site
 
       - name: Get Terraform outputs
         id: tf_outputs
         run: |
-          echo "::set-output name=cf_dist_id::$(terraform output -raw cloudfront_distribution_id)"
-          echo "::set-output name=website_bucket::$(terraform output -raw website_bucket)"
-        # Adjust output names above to match your Terraform outputs
+          echo "cf_dist_id=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
+          echo "website_bucket=$(terraform output -raw website_bucket)" >> $GITHUB_OUTPUT
+        working-directory: ./terraform-static-site
 
       - name: List static website files
         run: ls -l ./terraform-static-site/my-website
