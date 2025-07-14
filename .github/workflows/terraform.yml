@@ -1,12 +1,3 @@
-name: Deploy Static Website with Terraform & Sync
-
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - '**'
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -29,27 +20,28 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./terraform-static-site
+        working-directory: ./   # root folder where your .tf files are
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: ./terraform-static-site
+        working-directory: ./   # root folder
 
       - name: Get Terraform outputs
         id: tf_outputs
         run: |
-          echo "cf_dist_id=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
-          echo "website_bucket=$(terraform output -raw website_bucket)" >> $GITHUB_OUTPUT
-        working-directory: ./terraform-static-site
+          echo "::set-output name=cf_dist_id::$(terraform output -raw cloudfront_distribution_id)"
+          echo "::set-output name=website_bucket::$(terraform output -raw website_bucket)"
+        working-directory: ./   # root folder
 
       - name: List static website files
-        run: ls -l ./terraform-static-site/my-website
+        run: ls -l ./my-website
 
       - name: Sync static site to S3
-        run: aws s3 sync ./terraform-static-site/my-website s3://${{ steps.tf_outputs.outputs.website_bucket }} --delete
+        run: aws s3 sync ./my-website s3://${{ steps.tf_outputs.outputs.website_bucket }} --delete
 
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ steps.tf_outputs.outputs.cf_dist_id }} \
             --paths "/*"
+
