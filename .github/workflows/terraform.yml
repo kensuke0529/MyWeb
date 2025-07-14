@@ -39,12 +39,14 @@ jobs:
       - name: Get Terraform outputs
         id: tf_outputs
         run: |
-          outputs=$(terraform output -json)
-          cf_dist_id=$(echo "$outputs" | jq -r '.cloudfront_distribution_id.value')
-          website_bucket=$(echo "$outputs" | jq -r '.website_bucket.value')
+          terraform output -json > tf_outputs.json
+          cat tf_outputs.json  # Optional: useful for debugging
+          cf_dist_id=$(jq -r '.cloudfront_distribution_id.value' tf_outputs.json)
+          website_bucket=$(jq -r '.website_bucket.value' tf_outputs.json)
           echo "cf_dist_id=$cf_dist_id" >> $GITHUB_OUTPUT
           echo "website_bucket=$website_bucket" >> $GITHUB_OUTPUT
         working-directory: ./
+
 
       - name: List static website files
         run: ls -l ./my-website
