@@ -2,7 +2,7 @@ variable "bucket_name_web" {
   type = string
 }
 
-## f
+
 
 variable "bucket_name_log" {
   type = string
