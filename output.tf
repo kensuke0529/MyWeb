@@ -13,3 +13,13 @@ output "logs_bucket" {
   description = "CloudFront logs S3 bucket name"
   value       = aws_s3_bucket.mylogs.bucket
 }
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID"
+  value       = aws_cloudfront_distribution.myweb.id
+}
+
+output "website_bucket" {
+  description = "S3 website bucket name"
+  value       = aws_s3_bucket.myweb.bucket
+}
